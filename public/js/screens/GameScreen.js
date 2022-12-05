@@ -3,7 +3,10 @@ class GameScreen extends Phaser.Scene {
         super("GameScreen");
     }
 
-    init() {}
+    init(data) {
+        this.gameType = data.type;
+        this.gameId = data.gameId;
+    }
     preload() {}
 
     create() {
@@ -53,7 +56,11 @@ class GameScreen extends Phaser.Scene {
         this.socket = io();
         var self = this;
 
-        // this.socket.emit('createRoom', 'room1');
+        if (this.gameType == "create") {
+            self.socket.emit("createRoom", { gameId: this.gameId });
+        } else {
+            self.socket.emit("joinRoom", { gameId: this.gameId });
+        }
 
         this.gameStopped = false;
 
@@ -199,7 +206,9 @@ class GameScreen extends Phaser.Scene {
             this.eat_audio.play();
             this.score += 10;
         }
-        this.socket.emit("ballCollected", this.score);
+        this.socket
+            .to(this.gameId)
+            .emit("ballCollected", this.gameId, this.score);
         // this.scoreTextPlayer1.setText("Score: " + this.score);
 
         // console.log(ball);
@@ -223,7 +232,9 @@ class GameScreen extends Phaser.Scene {
             ) {
                 // console.log("Moved player, ", xPosition);
 
-                this.socket.emit("trackPlayerMovement", xPosition);
+                this.socket
+                    .to(this.gameId)
+                    .emit("trackPlayerMovement", xPosition);
             }
 
             this.player.oldPosition = {

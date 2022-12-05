@@ -1,6 +1,6 @@
 class LoadingScreen extends Phaser.Scene {
     constructor() {
-        super("Preload");
+        super("LoadingScreen");
     }
     preload() {
         let loadingBar = this.add.graphics({
@@ -21,7 +21,7 @@ class LoadingScreen extends Phaser.Scene {
         });
 
         this.load.on("complete", () => {
-            this.scene.start("GameScreen");
+            this.scene.start("JoinRoom");
         });
 
         //Load images
@@ -36,6 +36,9 @@ class LoadingScreen extends Phaser.Scene {
         this.load.audio("eat_audio", "assets/audio/eat.wav");
         this.load.audio("hurt_audio", "assets/audio/hurt.mp3");
         this.load.audio("countdown_audio", "assets/audio/countdown.wav");
+
+        //Load html file
+        this.load.html("joinForm", "assets/components/joinForm.html");
     }
 
     create() {}

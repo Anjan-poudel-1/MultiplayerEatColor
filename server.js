@@ -6,12 +6,7 @@ const { Server } = require("socket.io");
 const io = new Server(server);
 
 // app.use(express.static(__dirname + "/css"));
-var players = {};
-var scores = {
-    player1: 0,
-    player2: 0,
-};
-var gameStop = true;
+
 app.use(express.static(__dirname + "/public"));
 
 app.get("/", function (req, res) {
@@ -20,22 +15,71 @@ app.get("/", function (req, res) {
 
 server.lastPlayderID = 0; // Keep track of the last id assigned to a new player
 
+var gameData = [];
+
+var roomData = {
+    players: {},
+    scores: {
+        player1: 0,
+        player2: 0,
+    },
+};
+var players = {};
+var scores = {
+    player1: 0,
+    player2: 0,
+};
+var gameStop = true;
+
 //added logic to listen for connections and disconnections.
 io.on("connection", function (socket) {
     console.log("a user connected: ", socket.id);
 
-    server.lastPlayderID++;
-
-    console.log("Player number ", server.lastPlayderID);
     let _isFirstPlayer = checkPosition(socket.id);
     let _totalTime = 60;
 
     // server side code
 
-    //   this.socket.on('createRoom', function(room) {
-    //     socket.join(room);
-    //     console.log("Room", room , "IS CREATED...");
-    //   });
+    socket.on("createRoom", function (roomData) {
+        console.log(socket.rooms);
+        socket.join(roomData.gameId);
+        console.log("Room", roomData.gameId, "IS CREATED...");
+        console.log(socket.rooms);
+    });
+    socket.on("joinRoom", function (roomData) {
+        //if there is room already available.. then
+
+        // check .. if there are players available...
+        //if less than 2 players are there only join ...
+        //else... emit to the client.. he cannot join ...
+        //client ma chai ... if cannot join vanni socket le emit gareko cha vane... scene of cannot join
+
+        console.log(
+            "To join ",
+            roomData.gameId,
+            "there are ",
+            io.sockets.adapter.rooms.get(roomData.gameId) &&
+                io.sockets.adapter.rooms.get(roomData.gameId).size
+        );
+        // socket.join(roomData.gameId);
+        var numClients =
+            io.sockets.adapter.rooms.get(roomData.gameId) &&
+            io.sockets.adapter.rooms.get(roomData.gameId).size != undefined
+                ? io.sockets.adapter.rooms.get(roomData.gameId).size
+                : 0;
+
+        console.log("Number of clients", numClients);
+
+        console.log("For second person ", socket.rooms);
+        if (numClients === 1) {
+            console.log("YOU CAN JOIN");
+        } else {
+            console.log("SERVER DOESNOT EXIST OR ALREADY FULL");
+            //emit that.... server doesnt exist.. or the server is full
+        }
+
+        console.log("Room", roomData.gameId, "IS joined...");
+    });
 
     players[socket.id] = {
         playerId: socket.id,
@@ -108,13 +152,13 @@ io.on("connection", function (socket) {
         // console.log("playerMovement of ", socket.id, _xPosition);
     });
 
-    socket.on("ballCollected", function (_score) {
+    socket.on("ballCollected", function (gameId, _score) {
         if (players[socket.id].isFirstPlayer) {
             scores.player1 = _score;
         } else {
             scores.player2 = _score;
         }
-        io.emit("scoreUpdated", scores);
+        io.to(gameId).emit("scoreUpdated", scores);
     });
 });
 

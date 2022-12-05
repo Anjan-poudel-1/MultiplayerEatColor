@@ -4,12 +4,26 @@ const config = {
     width: 1000,
     parent: "eat-that-color",
     title: "Eat the color",
-    scene: [LoadingScreen, GameScreen, FinalScore],
+    dom: {
+        createContainer: true,
+    },
+    scene: [LoadingScreen, JoinRoom, GameScreen, FinalScore],
     physics: {
         default: "arcade",
         arcade: {
             debug: false,
         },
+    },
+
+    plugins: {
+        scene: [
+            {
+                key: "rexuiplugin",
+                url: "https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js",
+                sceneKey: "rexUI",
+            },
+            // ...
+        ],
     },
 };
 
